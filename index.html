@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1117">
+<title>FlowDay Pro — Personal Habit & Mood Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#05060a;
+  --surface:#0d1117;
+  --surface-elevated:#161b22;
+  --surface-hover:#1c2128;
+  --border:#30363d;
+  --border-subtle:#21262d;
+  --accent:#58a6ff;
+  --accent-glow:rgba(88,166,255,0.15);
+  --accent-secondary:#a371f7;
+  --green:#3fb950;
+  --green-glow:rgba(63,185,80,0.15);
+  --amber:#d29922;
+  --red:#f85149;
+  --purple:#bc8cff;
+  --teal:#39c5cf;
+  --pink:#f778ba;
+  --orange:#ff7b72;
+  --text:#e6edf3;
+  --text-secondary:#8b949e;
+  --text-tertiary:#484f58;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+  --shadow-lg:0 24px 48px rgba(0,0,0,0.5);
+  --transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"]{
+  --bg:#f6f8fa;
+  --surface:#ffffff;
+  --surface-elevated:#f6f8fa;
+  --surface-hover:#f3f4f6;
+  --border:#d0d7de;
+  --border-subtle:#e5e7eb;
+  --text:#1f2328;
+  --text-secondary:#656d76;
+  --text-tertiary:#8c959f;
+  --shadow:0 8px 32px rgba(31,35,40,0.08);
+  --shadow-lg:0 24px 48px rgba(31,35,40,0.12);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;transition:background 0.5s ease;}
+body{line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* Ambient background */
+.ambient-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.ambient-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.04;animation:blobFloat 20s infinite ease-in-out;}
+.ambient-blob:nth-child(1){width:500px;height:500px;background:var(--accent);top:-10%;left:-10%;animation-delay:0s;}
+.ambient-blob:nth-child(2){width:400px;height:400px;background:var(--purple);bottom:-10%;right:-10%;animation-delay:-5s;}
+.ambient-blob:nth-child(3){width:300px;height:300px;background:var(--green);top:40%;left:60%;animation-delay:-10s;}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(30px,-30px) scale(1.1);}66%{transform:translate(-20px,20px) scale(0.9);}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-tertiary);}
+
+/* Layout */
+.app{display:flex;height:100vh;position:relative;z-index:1;}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;flex-shrink:0;transition:var(--transition);}
+.sidebar-collapsed{width:72px;}
+.sidebar-collapsed .nav-label,.sidebar-collapsed .logo-text,.sidebar-collapsed .user-info{display:none;}
+.sidebar-collapsed .logo-icon{margin-right:0;}
+.sidebar-collapsed .nav-item{justify-content:center;padding:0;}
+.sidebar-collapsed .avatar{margin:0 auto;}
+
+.logo{display:flex;align-items:center;padding:0 24px 24px;gap:12px;}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:16px;box-shadow:0 4px 16px rgba(88,166,255,0.3);}
+.logo-text{font-weight:700;font-size:18px;letter-spacing:-0.5px;}
+.logo-text span{font-weight:400;color:var(--text-secondary);}
+
+.nav-section{flex:1;overflow-y:auto;padding:0 12px;}
+.nav-group{margin-bottom:8px;}
+.nav-label{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-tertiary);padding:8px 12px;letter-spacing:0.5px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);margin-bottom:2px;color:var(--text-secondary);font-size:14px;font-weight:500;border:none;background:transparent;width:100%;font-family:inherit;}
+.nav-item:hover{background:var(--surface-hover);color:var(--text);}
+.nav-item.active{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(88,166,255,0.25);}
+.nav-item .icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+
+.user-section{padding:16px 12px 0;border-top:1px solid var(--border-subtle);margin-top:auto;}
+.user-card{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);}
+.user-card:hover{background:var(--surface-hover);}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-plan{font-size:11px;color:var(--text-tertiary);}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:64px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.menu-toggle{width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:var(--transition);}
+.menu-toggle:hover{background:var(--surface-hover);color:var(--text);}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-0.3px;}
+.page-subtitle{font-size:13px;color:var(--text-secondary);margin-left:8px;font-weight:400;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.search-box{position:relative;}
+.search-box input{background:var(--surface-hover);border:1px solid var(--border-subtle);border-radius:8px;padding:8px 12px 8px 36px;color:var(--text);font-family:inherit;font-size:13px;width:240px;transition:var(--transition);}
+.search-box input:focus{outline:none;border-color:var(--accent);width:300px;}
+.search-box::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;opacity:0.5;}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:var(--transition);position:relative;}
+.icon-btn:hover{background:var(--surface-hover);color:var(--text);}
+.icon-btn .dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--surface);}
+
+.content{flex:1;overflow-y:auto;padding:28px;}
+
+/* Screen management */
+.screen{display:none;animation:screenEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1);}
+.screen.active{display:block;}
+@keyframes screenEnter{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:var(--transition);}
+.card:hover{border-color:var(--border);box-shadow:var(--shadow);}
+.card-elevated{background:var(--surface-elevated);box-shadow:var(--shadow);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.card-title{font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.card-heading{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-0.3px;}
+.card-sub{font-size:14px;color:var(--text-secondary);}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:var(--transition);cursor:pointer;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple));opacity:0;transition:opacity 0.3s;}
+.stat-card:hover::before{opacity:1;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;background:var(--surface-hover);}
+.stat-value{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:4px;font-family:'Inter',sans-serif;}
+.stat-label{font-size:13px;color:var(--text-secondary);font-weight:500;}
+.stat-change{font-size:12px;font-weight:600;margin-top:8px;display:flex;align-items:center;gap:4px;}
+.stat-change.up{color:var(--green);}.stat-change.down{color:var(--red);}
+
+/* Quick check-in hero */
+.hero-card{background:linear-gradient(135deg,rgba(88,166,255,0.1),rgba(163,113,247,0.05));border:1px solid rgba(88,166,255,0.2);border-radius:var(--radius);padding:32px;margin-bottom:24px;position:relative;overflow:hidden;}
+.hero-card::after{content:'';position:absolute;top:-50%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(88,166,255,0.08),transparent 70%);pointer-events:none;}
+.hero-title{font-size:28px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px;}
+.hero-sub{font-size:16px;color:var(--text-secondary);margin-bottom:24px;max-width:600px;line-height:1.6;}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:var(--transition);white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(88,166,255,0.3);}
+.btn-primary:hover{background:#79b8ff;transform:translateY(-1px);box-shadow:0 6px 20px rgba(88,166,255,0.4);}
+.btn-secondary{background:var(--surface-hover);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--surface-elevated);border-color:var(--text-tertiary);}
+.btn-ghost{background:transparent;color:var(--text-secondary);}
+.btn-ghost:hover{background:var(--surface-hover);color:var(--text);}
+.btn-success{background:var(--green);color:#fff;box-shadow:0 4px 16px rgba(63,185,80,0.3);}
+.btn-success:hover{background:#4ae168;transform:translateY(-1px);}
+.btn-lg{padding:14px 28px;font-size:15px;}
+
+/* Mood selector advanced */
+.mood-section{margin-bottom:24px;}
+.mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
+.mood-card{background:var(--surface-elevated);border:2px solid var(--border-subtle);border-radius:var(--radius);padding:20px 12px;text-align:center;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;}
+.mood-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 24px rgba(88,166,255,0.15);}
+.mood-card.selected{border-color:var(--accent);background:rgba(88,166,255,0.08);box-shadow:0 0 0 4px var(--accent-glow),0 8px 24px rgba(88,166,255,0.2);}
+.mood-card.selected .mood-emoji{transform:scale(1.2);}
+.mood-emoji{font-size:36px;display:block;margin-bottom:8px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.mood-label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;}
+.mood-value{font-size:11px;color:var(--text-tertiary);margin-top:4px;}
+.mood-card.selected .mood-label{color:var(--accent);}
+
+/* Energy slider */
+.energy-section{margin-bottom:24px;}
+.energy-slider{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:var(--surface-hover);outline:none;margin:16px 0;}
+.energy-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 2px 8px rgba(88,166,255,0.4);border:3px solid var(--surface);transition:transform 0.2s;}
+.energy-slider::-webkit-slider-thumb:hover{transform:scale(1.2);}
+.energy-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text-tertiary);font-weight:500;}
+
+/* Habits */
+.habit-list{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+.habit-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--radius-sm);background:var(--surface-elevated);border:1px solid var(--border-subtle);cursor:pointer;transition:var(--transition);position:relative;}
+.habit-row:hover{border-color:var(--border);background:var(--surface-hover);}
+.habit-row.completed{border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.05);}
+.habit-row.completed .habit-name{color:var(--green);}
+.habit-drag{color:var(--text-tertiary);cursor:grab;font-size:16px;padding:4px;}
+.habit-icon{width:40px;height:40px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid var(--border-subtle);}
+.habit-info{flex:1;min-width:0;}
+.habit-name{font-size:14px;font-weight:600;margin-bottom:2px;}
+.habit-meta{font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:8px;}
+.habit-streak{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--amber);}
+.habit-toggle{width:48px;height:26px;border-radius:13px;background:var(--surface-hover);border:1px solid var(--border);position:relative;cursor:pointer;transition:var(--transition);flex-shrink:0;}
+.habit-toggle.on{background:var(--green);border-color:var(--green);}
+.habit-toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+.habit-toggle.on::after{left:24px;}
+.habit-category{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--surface);color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* Note input rich */
+.note-section{margin-bottom:24px;}
+.note-toolbar{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--border-subtle);background:var(--surface-elevated);border-radius:var(--radius-sm) var(--radius-sm) 0 0;}
+.note-toolbar button{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:var(--transition);}
+.note-toolbar button:hover{background:var(--surface-hover);color:var(--text);}
+.note-input{width:100%;background:var(--surface-elevated);border:1px solid var(--border-subtle);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;padding:16px;resize:none;height:120px;transition:var(--transition);line-height:1.6;}
+.note-input:focus{outline:none;border-color:var(--accent);}
+.note-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;color:var(--text-tertiary);}
+.voice-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;border:1px solid var(--border-subtle);background:var(--surface);color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:500;transition:var(--transition);}
+.voice-btn:hover{border-color:var(--red);color:var(--red);}
+.voice-btn.recording{animation:pulseRed 1.5s infinite;background:rgba(248,81,73,0.1);border-color:var(--red);color:var(--red);}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(248,81,73,0.4);}50%{box-shadow:0 0 0 8px rgba(248,81,73,0);}}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+.grid-sidebar{display:grid;grid-template-columns:1fr 360px;gap:24px;max-width:1400px;}
+
+/* Calendar */
+.calendar-card .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:16px;}
+.calendar-day{text-align:center;padding:8px;font-size:12px;color:var(--text-tertiary);font-weight:600;}
+.calendar-date{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:var(--transition);font-size:13px;font-weight:500;position:relative;}
+.calendar-date:hover{background:var(--surface-hover);}
+.calendar-date.today{background:var(--accent);color:#fff;font-weight:700;}
+.calendar-date.has-data::after{content:'';position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--green);}
+.calendar-date.mood-1{background:rgba(248,81,49,0.1);color:var(--red);}
+.calendar-date.mood-2{background:rgba(210,153,34,0.1);color:var(--amber);}
+.calendar-date.mood-3{background:rgba(139,148,158,0.1);color:var(--text-secondary);}
+.calendar-date.mood-4{background:rgba(88,166,255,0.1);color:var(--accent);}
+.calendar-date.mood-5{background:rgba(63,185,80,0.1);color:var(--green);}
+
+/* Achievements */
+.achievement-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.achievement-card{background:var(--surface-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:16px;text-align:center;transition:var(--transition);opacity:0.6;}
+.achievement-card.unlocked{opacity:1;border-color:rgba(210,153,34,0.3);background:rgba(210,153,34,0.05);}
+.achievement-card:hover{transform:translateY(-2px);}
+.achievement-icon{font-size:32px;margin-bottom:8px;display:block;}
+.achievement-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.achievement-desc{font-size:11px;color:var(--text-tertiary);}
+
+/* Insight cards */
+.insight-card{background:linear-gradient(135deg,rgba(88,166,255,0.08),rgba(163,113,247,0.04));border:1px solid rgba(88,166,255,0.15);border-radius:var(--radius);padding:24px;margin-bottom:24px;position:relative;overflow:hidden;}
+.insight-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent),var(--purple));}
+.insight-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.insight-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;}
+.insight-title{font-size:18px;font-weight:700;}
+.insight-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:rgba(88,166,255,0.1);color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;}
+.insight-body{font-size:15px;color:var(--text-secondary);line-height:1.7;}
+.insight-body strong{color:var(--text);}
+
+/* Charts */
+.chart-container{position:relative;height:200px;margin-top:16px;}
+.chart-svg{width:100%;height:100%;}
+.heatmap{display:flex;flex-direction:column;gap:6px;margin-top:16px;}
+.heatmap-row{display:flex;gap:4px;align-items:center;}
+.heatmap-label{font-size:11px;color:var(--text-secondary);width:100px;flex-shrink:0;font-weight:500;}
+.heatmap-cells{display:flex;gap:3px;flex:1;}
+.heatmap-cell{width:16px;height:16px;border-radius:4px;background:var(--surface-hover);transition:var(--transition);cursor:pointer;}
+.heatmap-cell:hover{transform:scale(1.3);z-index:10;}
+.heatmap-cell.l1{background:rgba(88,166,255,0.2);}.heatmap-cell.l2{background:rgba(88,166,255,0.4);}.heatmap-cell.l3{background:rgba(88,166,255,0.6);}.heatmap-cell.l4{background:rgba(88,166,255,0.85);}
+
+/* Focus Timer */
+.timer-circle{width:160px;height:160px;margin:0 auto 20px;position:relative;}
+.timer-circle svg{width:160px;height:160px;transform:rotate(-90deg);}
+.timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.timer-num{font-size:36px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.timer-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;}
+.timer-controls{display:flex;justify-content:center;gap:12px;}
+.timer-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--surface-elevated);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:var(--transition);border:1px solid var(--border-subtle);}
+.timer-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* Toast notifications */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 20px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:all;min-width:300px;}
+.toast.show{transform:translateX(0);}
+.toast-success{border-left:3px solid var(--green);}
+.toast-info{border-left:3px solid var(--accent);}
+.toast-icon{font-size:18px;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,6,10,0.8);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:520px;padding:32px;box-shadow:var(--shadow-lg);animation:modalEnter 0.3s cubic-bezier(0.4,0,0.2,1);}
+@keyframes modalEnter{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:20px;font-weight:700;}
+.modal-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--surface-hover);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.modal-close:hover{background:var(--border);color:var(--text);}
+
+/* Onboarding */
+.onboarding-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;}
+.onboarding-overlay.active{display:flex;}
+.onboarding-header{padding:24px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.onboarding-progress{display:flex;gap:8px;}
+.progress-dot{width:32px;height:6px;border-radius:3px;background:var(--surface-hover);transition:var(--transition);}
+.progress-dot.active{background:var(--accent);}.progress-dot.done{background:var(--green);}
+.onboarding-body{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;}
+.onboarding-step{display:none;max-width:600px;width:100%;text-align:center;}
+.onboarding-step.active{display:block;animation:fadeUp 0.5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.ob-icon{font-size:64px;margin-bottom:20px;display:block;}
+.ob-title{font-size:32px;font-weight:800;margin-bottom:12px;letter-spacing:-0.5px;}
+.ob-desc{font-size:16px;color:var(--text-secondary);line-height:1.7;margin-bottom:32px;}
+.ob-features{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;text-align:left;}
+.ob-feature{display:flex;gap:12px;padding:16px;background:var(--surface-elevated);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);}
+.ob-feature-icon{font-size:24px;}
+.ob-feature-text h4{font-size:14px;font-weight:600;margin-bottom:2px;}
+.ob-feature-text p{font-size:13px;color:var(--text-secondary);}
+.habit-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:32px;text-align:left;}
+.habit-chip{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface-elevated);border:2px solid var(--border-subtle);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:14px;font-weight:500;}
+.habit-chip:hover{border-color:var(--accent);}
+.habit-chip.selected{border-color:var(--accent);background:rgba(88,166,255,0.08);}
+.habit-chip .check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;transition:var(--transition);flex-shrink:0;}
+.habit-chip.selected .check{background:var(--accent);border-color:var(--accent);color:#fff;}
+.onboarding-footer{padding:24px 32px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ob-nav{display:flex;gap:12px;}
+
+/* Widgets */
+.widget-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.widget-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.widget-title{font-size:14px;font-weight:600;}
+.widget-action{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;}
+.widget-action:hover{text-decoration:underline;}
+
+/* Sleep tracker */
+.sleep-bar{height:32px;border-radius:8px;background:var(--surface-hover);position:relative;overflow:hidden;margin-top:12px;}
+.sleep-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--purple),var(--accent));transition:width 1s ease;position:relative;}
+.sleep-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:rgba(255,255,255,0.3);}
+.sleep-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-tertiary);}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface-hover);border:1px solid var(--border-subtle);color:var(--text-secondary);cursor:pointer;transition:var(--transition);}
+.tag:hover{border-color:var(--accent);color:var(--accent);}
+.tag.active{background:rgba(88,166,255,0.1);border-color:var(--accent);color:var(--accent);}
+
+/* Responsive */
+@media(max-width:1200px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-sidebar{grid-template-columns:1fr;}
+  .widget-row{grid-template-columns:1fr;}
+  .achievement-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:768px){
+  .sidebar{position:fixed;z-index:50;height:100%;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .stats-grid{grid-template-columns:1fr;}
+  .mood-grid{grid-template-columns:repeat(3,1fr);}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .topbar{padding:0 16px;}
+  .content{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ambient-bg">
+  <div class="ambient-blob"></div>
+  <div class="ambient-blob"></div>
+  <div class="ambient-blob"></div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="onboarding-overlay active" id="onboarding">
+  <div class="onboarding-header">
+    <div class="logo" style="padding:0;"><div class="logo-icon">F</div><div class="logo-text">FlowDay<span> Pro</span></div></div>
+    <button class="btn btn-ghost" onclick="skipOnboarding()">Skip</button>
+  </div>
+  <div class="onboarding-body">
+    <!-- Step 1 -->
+    <div class="onboarding-step active" id="ob-step-1">
+      <span class="ob-icon">🧠</span>
+      <h2 class="ob-title">Understand yourself better</h2>
+      <p class="ob-desc">FlowDay Pro combines mood intelligence, habit science, and biometric awareness to help working professionals prevent burnout before it happens.</p>
+      <div class="ob-features">
+        <div class="ob-feature"><span class="ob-feature-icon">⚡</span><div class="ob-feature-text"><h4>90-Second Check-in</h4><p>Mood, energy, habits, and voice notes</p></div></div>
+        <div class="ob-feature"><span class="ob-feature-icon">🔮</span><div class="ob-feature-text"><h4>Predictive Insights</h4><p>AI spots patterns 7 days ahead</p></div></div>
+        <div class="ob-feature"><span class="ob-feature-icon">🎯</span><div class="ob-feature-text"><h4>Focus Timer</h4><p>Pomodoro with habit integration</p></div></div>
+        <div class="ob-feature"><span class="ob-feature-icon">🏆</span><div class="ob-feature-text"><h4>Achievement System</h4><p>Gamified streaks and milestones</p></div></div>
+      </div>
+    </div>
+    <!-- Step 2 -->
+    <div class="onboarding-step" id="ob-step-2">
+      <span class="ob-icon">🎯</span>
+      <h2 class="ob-title">Choose your habits</h2>
+      <p class="ob-desc">Select up to 5 habits to track. You can customize these later in Settings.</p>
+      <div class="habit-selector" id="habitSelector">
+        <div class="habit-chip selected" onclick="toggleHabitChip(this)"><div class="check">✓</div><span>🏃 Exercise</span></div>
+        <div class="habit-chip selected" onclick="toggleHabitChip(this)"><div class="check">✓</div><span>😴 Deep Sleep</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>📖 Reading</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>💧 Hydration</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>🧘 Meditation</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>🚫 No Alcohol</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>💼 Deep Work</span></div>
+        <div class="habit-chip" onclick="toggleHabitChip(this)"><div class="check"></div><span>🥗 Nutrition</span></div>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div class="onboarding-step" id="ob-step-3">
+      <span class="ob-icon">🔐</span>
+      <h2 class="ob-title">Your data stays private</h2>
+      <p class="ob-desc">FlowDay Pro uses local-first encryption. Your journal entries are encrypted on your device before syncing. We never sell data, ever.</p>
+      <div style="background:var(--surface-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:24px;text-align:left;margin-bottom:32px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(63,185,80,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;">🔒</div>
+          <div><div style="font-weight:600;">End-to-End Encryption</div><div style="font-size:13px;color:var(--text-secondary);">AES-256 encryption for all journal entries</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(88,166,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;">📤</div>
+          <div><div style="font-weight:600;">Export Anytime</div><div style="font-size:13px;color:var(--text-secondary);">CSV, JSON, or PDF export with one click</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(210,153,34,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;">🗑️</div>
+          <div><div style="font-weight:600;">Delete Forever</div><div style="font-size:13px;color:var(--text-secondary);">Permanent deletion with 7-day grace period</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="onboarding-footer">
+    <button class="btn btn-ghost" id="ob-back" onclick="prevStep()" style="visibility:hidden;">← Back</button>
+    <div class="onboarding-progress">
+      <div class="progress-dot active" id="pd-1"></div>
+      <div class="progress-dot" id="pd-2"></div>
+      <div class="progress-dot" id="pd-3"></div>
+    </div>
+    <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="logo"><div class="logo-icon">F</div><div class="logo-text">FlowDay<span> Pro</span></div></div>
+    <div class="nav-section">
+      <div class="nav-group">
+        <div class="nav-label">Main</div>
+        <button class="nav-item active" onclick="showScreen('dashboard')"><span class="icon">🏠</span><span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" onclick="showScreen('checkin')"><span class="icon">✏️</span><span class="nav-label">Daily Check-in</span><span class="nav-badge">1</span></button>
+        <button class="nav-item" onclick="showScreen('calendar')"><span class="icon">📅</span><span class="nav-label">Calendar</span></button>
+        <button class="nav-item" onclick="showScreen('focus')"><span class="icon">🎯</span><span class="nav-label">Focus Timer</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Analytics</div>
+        <button class="nav-item" onclick="showScreen('insights')"><span class="icon">🔮</span><span class="nav-label">AI Insights</span></button>
+        <button class="nav-item" onclick="showScreen('achievements')"><span class="icon">🏆</span><span class="nav-label">Achievements</span></button>
+        <button class="nav-item" onclick="showScreen('trends')"><span class="icon">📊</span><span class="nav-label">Trends</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">System</div>
+        <button class="nav-item" onclick="showScreen('settings')"><span class="icon">⚙️</span><span class="nav-label">Settings</span></button>
+      </div>
+    </div>
+    <div class="user-section">
+      <div class="user-card" onclick="showScreen('profile')">
+        <div class="avatar">SC</div>
+        <div class="user-info"><div class="user-name">Shubham C.</div><div class="user-plan">Pro Plan</div></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <div>
+          <span class="page-title" id="page-title">Dashboard</span>
+          <span class="page-subtitle" id="page-subtitle">Overview</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box"><input type="text" placeholder="Search habits, notes..."/></div>
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+        <button class="icon-btn" onclick="showScreen('notifications')" title="Notifications"><span>🔔</span><span class="dot"></span></button>
+        <button class="icon-btn" onclick="showCheckinModal()" title="Quick check-in" style="background:var(--accent);color:#fff;">+</button>
+      </div>
+    </div>
+
+    <div class="content" id="content-area">
+      <!-- DASHBOARD SCREEN -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="hero-card">
+          <div class="hero-title">Good evening, Shubham 👋</div>
+          <div class="hero-sub">You haven't checked in today. Your current streak is 12 days — keep the momentum going with a 90-second check-in.</div>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" onclick="showScreen('checkin')">Start Check-in →</button>
+            <button class="btn btn-secondary btn-lg" onclick="showScreen('focus')">Focus Mode</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" onclick="showScreen('trends')">
+            <div class="stat-icon" style="background:rgba(88,166,255,0.1);">😊</div>
+            <div class="stat-value" style="color:var(--accent);">4.2</div>
+            <div class="stat-label">7-Day Mood Avg</div>
+            <div class="stat-change up">↑ 0.3 from last week</div>
+          </div>
+          <div class="stat-card" onclick="showScreen('achievements')">
+            <div class="stat-icon" style="background:rgba(210,153,34,0.1);">🔥</div>
+            <div class="stat-value" style="color:var(--amber);">12</div>
+            <div class="stat-label">Day Streak</div>
+            <div class="stat-change up">Best: 21 days</div>
+          </div>
+          <div class="stat-card" onclick="showScreen('insights')">
+            <div class="stat-icon" style="background:rgba(63,185,80,0.1);">✓</div>
+            <div class="stat-value" style="color:var(--green);">78%</div>
+            <div class="stat-label">Habit Completion</div>
+            <div class="stat-change up">↑ 12% this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(163,113,247,0.1);">⚡</div>
+            <div class="stat-value" style="color:var(--purple);">7.2</div>
+            <div class="stat-label">Energy Score</div>
+            <div class="stat-change down">↓ 0.5 from yesterday</div>
+          </div>
+        </div>
+
+        <div class="grid-sidebar">
+          <div>
+            <div class="insight-card">
+              <div class="insight-header">
+                <div class="insight-icon">🔮</div>
+                <div><div class="insight-title">Weekly AI Insight</div></div>
+                <span class="insight-badge">Auto-generated</span>
+              </div>
+              <div class="insight-body">
+                Your mood is <strong>+1.2 higher</strong> on days you complete both exercise and deep sleep before 10 PM. However, your energy score drops significantly on days with back-to-back meetings. Consider blocking 15-minute recovery buffers between meetings on Tuesdays and Thursdays.
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Habit Performance</div><div class="card-heading">Last 28 Days</div></div><button class="btn btn-ghost" onclick="showScreen('trends')">View All →</button></div>
+              <div class="heatmap">
+                <div class="heatmap-row"><span class="heatmap-label">🏃 Exercise</span><div class="heatmap-cells" id="hm-exercise"></div></div>
+                <div class="heatmap-row"><span class="heatmap-label">😴 Deep Sleep</span><div class="heatmap-cells" id="hm-sleep"></div></div>
+                <div class="heatmap-row"><span class="heatmap-label">📖 Reading</span><div class="heatmap-cells" id="hm-read"></div></div>
+                <div class="heatmap-row"><span class="heatmap-label">💧 Hydration</span><div class="heatmap-cells" id="hm-water"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header"><div class="card-title">Today's Focus</div><button class="btn btn-ghost">Edit</button></div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                  <div style="width:36px;height:36px;border-radius:8px;background:rgba(88,166,255,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;">🏃</div>
+                  <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Morning Run</div><div style="font-size:12px;color:var(--text-secondary);">6:30 AM • 5km goal</div></div>
+                  <div class="habit-toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                  <div style="width:36px;height:36px;border-radius:8px;background:rgba(163,113,247,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;">💼</div>
+                  <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Deep Work Block</div><div style="font-size:12px;color:var(--text-secondary);">9:00 AM • 90 min</div></div>
+                  <div class="habit-toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                  <div style="width:36px;height:36px;border-radius:8px;background:rgba(63,185,80,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;">🧘</div>
+                  <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Evening Meditation</div><div style="font-size:12px;color:var(--text-secondary);">8:00 PM • 15 min</div></div>
+                  <div class="habit-toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">Sleep Quality</div><span style="font-size:13px;color:var(--text-secondary);">Last night</span></div>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                <div style="font-size:42px;font-weight:800;color:var(--purple);">7.5<span style="font-size:16px;color:var(--text-secondary);">hrs</span></div>
+                <div style="flex:1;">
+                  <div class="sleep-bar"><div class="sleep-fill" style="width:85%;"></div></div>
+                  <div class="sleep-labels"><span>Deep: 2.1h</span><span>REM: 1.8h</span><span>Light: 3.6h</span></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="tag active">😴 No screen before bed</span>
+                <span class="tag">🌡️ Cool room</span>
+                <span class="tag">☕ No caffeine</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECK-IN SCREEN -->
+      <div class="screen" id="screen-checkin">
+        <div class="grid-sidebar">
+          <div>
+            <div class="card mood-section">
+              <div class="card-title">Step 1 of 4 — Mood</div>
+              <div class="card-heading">How are you feeling?</div>
+              <div class="card-sub">Select the emoji that matches your current emotional state</div>
+              <div class="mood-grid">
+                <div class="mood-card" onclick="selectMood(this,1)"><span class="mood-emoji">😞</span><span class="mood-label">Rough</span><span class="mood-value">1/5</span></div>
+                <div class="mood-card" onclick="selectMood(this,2)"><span class="mood-emoji">😕</span><span class="mood-label">Low</span><span class="mood-value">2/5</span></div>
+                <div class="mood-card" onclick="selectMood(this,3)"><span class="mood-emoji">😐</span><span class="mood-label">Okay</span><span class="mood-value">3/5</span></div>
+                <div class="mood-card selected" onclick="selectMood(this,4)"><span class="mood-emoji">😊</span><span class="mood-label">Good</span><span class="mood-value">4/5</span></div>
+                <div class="mood-card" onclick="selectMood(this,5)"><span class="mood-emoji">😄</span><span class="mood-label">Great</span><span class="mood-value">5/5</span></div>
+              </div>
+            </div>
+
+            <div class="card energy-section">
+              <div class="card-title">Step 2 of 4 — Energy</div>
+              <div class="card-heading">Energy Level</div>
+              <div class="card-sub">How much fuel do you have right now?</div>
+              <input type="range" class="energy-slider" min="1" max="10" value="7" id="energySlider" oninput="updateEnergy(this.value)">
+              <div class="energy-labels"><span>Exhausted</span><span style="color:var(--accent);font-weight:600;" id="energyValue">7/10</span><span>Peak</span></div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Step 3 of 4 — Habits</div>
+              <div class="card-heading">Daily Habits</div>
+              <div class="habit-list" id="checkinHabits">
+                <div class="habit-row completed" onclick="toggleCheckinHabit(this)">
+                  <span class="habit-drag">⋮⋮</span>
+                  <div class="habit-icon">🏃</div>
+                  <div class="habit-info"><div class="habit-name">Morning Exercise</div><div class="habit-meta"><span class="habit-streak">🔥 12 days</span><span class="habit-category">Health</span></div></div>
+                  <div class="habit-toggle on"></div>
+                </div>
+                <div class="habit-row" onclick="toggleCheckinHabit(this)">
+                  <span class="habit-drag">⋮⋮</span>
+                  <div class="habit-icon">😴</div>
+                  <div class="habit-info"><div class="habit-name">Deep Sleep 8h</div><div class="habit-meta"><span class="habit-streak">🔥 5 days</span><span class="habit-category">Recovery</span></div></div>
+                  <div class="habit-toggle"></div>
+                </div>
+                <div class="habit-row completed" onclick="toggleCheckinHabit(this)">
+                  <span class="habit-drag">⋮⋮</span>
+                  <div class="habit-icon">💧</div>
+                  <div class="habit-info"><div class="habit-name">Hydration 3L</div><div class="habit-meta"><span class="habit-streak">💧 2 days</span><span class="habit-category">Health</span></div></div>
+                  <div class="habit-toggle on"></div>
+                </div>
+                <div class="habit-row" onclick="toggleCheckinHabit(this)">
+                  <span class="habit-drag">⋮⋮</span>
+                  <div class="habit-icon">📖</div>
+                  <div class="habit-info"><div class="habit-name">Read 30 min</div><div class="habit-meta"><span class="habit-streak">📖 8 days</span><span class="habit-category">Growth</span></div></div>
+                  <div class="habit-toggle"></div>
+                </div>
+                <div class="habit-row" onclick="toggleCheckinHabit(this)">
+                  <span class="habit-drag">⋮⋮</span>
+                  <div class="habit-icon">🧘</div>
+                  <div class="habit-info"><div class="habit-name">Meditation</div><div class="habit-meta"><span class="habit-streak">🧘 3 days</span><span class="habit-category">Mind</span></div></div>
+                  <div class="habit-toggle"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card note-section">
+              <div class="card-title">Step 4 of 4 — Reflection</div>
+              <div class="card-heading">Journal Note</div>
+              <div class="note-toolbar">
+                <button onclick="formatText('bold')"><b>B</b></button>
+                <button onclick="formatText('italic')"><i>I</i></button>
+                <button onclick="formatText('list')">☰</button>
+                <button>😊</button>
+              </div>
+              <textarea class="note-input" id="journalNote" placeholder="What's on your mind today? A win, a challenge, or something you're grateful for..."></textarea>
+              <div class="note-footer">
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecord()">🎙️ Voice Note</button>
+                <span id="charCount">0 / 500</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%;margin-bottom:24px;" onclick="saveCheckin()">✓ Save Check-in & View Insights</button>
+          </div>
+
+          <div>
+            <div class="card" style="text-align:center;margin-bottom:20px;">
+              <div class="card-title">Current Streak</div>
+              <div style="width:140px;height:140px;margin:16px auto;position:relative;">
+                <svg width="140" height="140" viewBox="0 0 140 140" style="transform:rotate(-90deg);">
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="var(--surface-hover)" stroke-width="10"/>
+                  <circle cx="70" cy="70" r="60" fill="none" stroke="url(#streakGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="94"/>
+                  <defs><linearGradient id="streakGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#d29922"/><stop offset="100%" stop-color="#f85149"/></linearGradient></defs>
+                </svg>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                  <div style="font-size:36px;font-weight:800;color:var(--amber);">12</div>
+                  <div style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;">Days</div>
+                </div>
+              </div>
+              <div style="font-size:14px;color:var(--text-secondary);">Best streak: <strong style="color:var(--amber);">21 days</strong></div>
+            </div>
+
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-title">Quick Stats</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+                <div style="text-align:center;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div style="font-size:24px;font-weight:800;color:var(--accent);">4.2</div>
+                  <div style="font-size:11px;color:var(--text-secondary);">Avg Mood</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div style="font-size:24px;font-weight:800;color:var(--green);">68%</div>
+                  <div style="font-size:11px;color:var(--text-secondary);">Habit Rate</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div style="font-size:24px;font-weight:800;color:var(--purple);">7.2</div>
+                  <div style="font-size:11px;color:var(--text-secondary);">Energy</div>
+                </div>
+                <div style="text-align:center;padding:12px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div style="font-size:24px;font-weight:800;color:var(--teal);">26</div>
+                  <div style="font-size:11px;color:var(--text-secondary);">Total</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Mood History</div>
+              <div style="display:flex;justify-content:space-between;margin-top:16px;align-items:flex-end;height:80px;gap:4px;" id="miniChart">
+                <div style="flex:1;background:var(--accent);border-radius:4px;height:60%;opacity:0.7;"></div>
+                <div style="flex:1;background:var(--accent);border-radius:4px;height:40%;opacity:0.7;"></div>
+                <div style="flex:1;background:var(--green);border-radius:4px;height:90%;opacity:0.9;"></div>
+                <div style="flex:1;background:var(--amber);border-radius:4px;height:30%;opacity:0.7;"></div>
+                <div style="flex:1;background:var(--accent);border-radius:4px;height:70%;opacity:0.8;"></div>
+                <div style="flex:1;background:var(--green);border-radius:4px;height:85%;opacity:0.9;"></div>
+                <div style="flex:1;background:var(--surface-hover);border-radius:4px;height:0%;border:1px dashed var(--border);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text-tertiary);">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR SCREEN -->
+      <div class="screen" id="screen-calendar">
+        <div class="card calendar-card" style="max-width:900px;">
+          <div class="card-header">
+            <div><div class="card-title">April 2026</div><div class="card-heading">Mood Calendar</div></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost">←</button>
+              <button class="btn btn-ghost">→</button>
+            </div>
+          </div>
+          <div class="calendar-grid">
+            <div class="calendar-day">Sun</div><div class="calendar-day">Mon</div><div class="calendar-day">Tue</div><div class="calendar-day">Wed</div><div class="calendar-day">Thu</div><div class="calendar-day">Fri</div><div class="calendar-day">Sat</div>
+            <div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div>
+            <div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div>
+            <div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div>
+            <div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div><div class="calendar-date"></div>
+            <div class="calendar-date"></div><div class="calendar-date"></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:20px;justify-content:center;font-size:12px;">
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:rgba(248,81,49,0.2);"></span> Rough</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:rgba(210,153,34,0.2);"></span> Low</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:rgba(139,148,158,0.2);"></span> Okay</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:rgba(88,166,255,0.2);"></span> Good</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:rgba(63,185,80,0.2);"></span> Great</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOCUS SCREEN -->
+      <div class="screen" id="screen-focus">
+        <div style="max-width:600px;margin:0 auto;text-align:center;padding:40px 0;">
+          <div class="card" style="padding:40px;">
+            <div class="card-title">Focus Timer</div>
+            <div class="card-heading" style="margin-bottom:8px;">Deep Work Session</div>
+            <div class="card-sub">Stay focused. Build better habits.</div>
+            
+            <div class="timer-circle">
+              <svg viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r="70" fill="none" stroke="var(--surface-hover)" stroke-width="6"/>
+                <circle cx="80" cy="80" r="70" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="110" id="timerProgress"/>
+              </svg>
+              <div class="timer-text">
+                <div class="timer-num" id="timerDisplay">25:00</div>
+                <div class="timer-label">Minutes</div>
+              </div>
+            </div>
+            
+            <div class="timer-controls">
+              <button class="timer-btn" onclick="adjustTimer(-5)">-5</button>
+              <button class="timer-btn" style="width:64px;height:64px;font-size:24px;background:var(--accent);color:#fff;border-color:var(--accent);" onclick="toggleTimer()" id="timerPlayBtn">▶</button>
+              <button class="timer-btn" onclick="adjustTimer(5)">+5</button>
+            </div>
+            
+            <div style="margin-top:32px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+              <span class="tag active">💼 Deep Work</span>
+              <span class="tag">🏃 Exercise</span>
+              <span class="tag">📖 Reading</span>
+              <span class="tag">🧘 Meditation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INSIGHTS SCREEN -->
+      <div class="screen" id="screen-insights">
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon">🔮</div>
+            <div><div class="insight-title">Predictive Burnout Risk</div></div>
+            <span class="insight-badge" style="background:rgba(63,185,80,0.1);color:var(--green);">Low Risk</span>
+          </div>
+          <div class="insight-body">
+            Based on your last 14 days, your burnout risk is <strong style="color:var(--green);">12%</strong> (low). Your exercise streak is protecting your mood baseline. Warning: Your sleep debt is accumulating — average 6.5h vs your 8h target. If this continues 3 more days, predicted mood drop: <strong>-0.8 points</strong>.
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Correlation Analysis</div><div class="card-heading">Habit → Mood Impact</div></div></div>
+            <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="font-weight:600;">🏃 Exercise</span><span style="color:var(--green);font-weight:700;">+1.2 mood</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--surface-hover);overflow:hidden;"><div style="width:92%;height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:4px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="font-weight:600;">😴 Deep Sleep</span><span style="color:var(--green);font-weight:700;">+0.9 mood</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--surface-hover);overflow:hidden;"><div style="width:78%;height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:4px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="font-weight:600;">🧘 Meditation</span><span style="color:var(--accent);font-weight:700;">+0.6 mood</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--surface-hover);overflow:hidden;"><div style="width:55%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:4px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="font-weight:600;">💧 Hydration</span><span style="color:var(--accent);font-weight:700;">+0.4 mood</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--surface-hover);overflow:hidden;"><div style="width:40%;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:4px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="font-weight:600;">📖 Reading</span><span style="color:var(--text-secondary);font-weight:700;">+0.2 mood</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--surface-hover);overflow:hidden;"><div style="width:25%;height:100%;background:var(--text-tertiary);border-radius:4px;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Weekly Patterns</div><div class="card-heading">Your Best & Worst Days</div></div></div>
+            <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;padding:16px;background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.2);border-radius:var(--radius-sm);">
+                <div style="font-size:28px;">📈</div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;">Best Day: Wednesday</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Avg mood 4.6 — You complete 89% of habits mid-week</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:16px;background:rgba(210,153,34,0.05);border:1px solid rgba(210,153,34,0.2);border-radius:var(--radius-sm);">
+                <div style="font-size:28px;">📉</div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;">Challenging: Monday</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Avg mood 3.1 — Sleep debt from weekend carries over</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:16px;background:rgba(88,166,255,0.05);border:1px solid rgba(88,166,255,0.2);border-radius:var(--radius-sm);">
+                <div style="font-size:28px;">💡</div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;">Recommendation</div>
+                  <div style="font-size:13px;color:var(--text-secondary);">Move exercise to Monday morning to boost start-of-week mood</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACHIEVEMENTS SCREEN -->
+      <div class="screen" id="screen-achievements">
+        <div class="card" style="margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--red));display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 8px 24px rgba(210,153,34,0.3);">🏆</div>
+            <div>
+              <div style="font-size:24px;font-weight:800;margin-bottom:4px;">Level 7 — Habit Architect</div>
+              <div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">1,240 XP • Next level: 360 XP needed</div>
+              <div style="height:8px;border-radius:4px;background:var(--surface-hover);width:300px;overflow:hidden;">
+                <div style="width:78%;height:100%;background:linear-gradient(90deg,var(--amber),var(--red));border-radius:4px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="achievement-grid">
+          <div class="achievement-card unlocked">
+            <span class="achievement-icon">🔥</span>
+            <div class="achievement-name">7-Day Streak</div>
+            <div class="achievement-desc">Check in 7 days in a row</div>
+          </div>
+          <div class="achievement-card unlocked">
+            <span class="achievement-icon">⚡</span>
+            <div class="achievement-name">Early Bird</div>
+            <div class="achievement-desc">5 morning check-ins before 8 AM</div>
+          </div>
+          <div class="achievement-card unlocked">
+            <span class="achievement-icon">🎯</span>
+            <div class="achievement-name">Perfect Week</div>
+            <div class="achievement-desc">100% habit completion for 7 days</div>
+          </div>
+          <div class="achievement-card">
+            <span class="achievement-icon">🧘</span>
+            <div class="achievement-name">Zen Master</div>
+            <div class="achievement-desc">30 days of meditation tracking</div>
+          </div>
+          <div class="achievement-card">
+            <span class="achievement-icon">📚</span>
+            <div class="achievement-name">Bookworm</div>
+            <div class="achievement-desc">Read 20 hours total</div>
+          </div>
+          <div class="achievement-card">
+            <span class="achievement-icon">🏃</span>
+            <div class="achievement-name">Marathon</div>
+            <div class="achievement-desc">50 total exercise sessions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRENDS SCREEN -->
+      <div class="screen" id="screen-trends">
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header"><div><div class="card-title">Analytics</div><div class="card-heading">Mood Trend — 30 Days</div></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" style="font-size:12px;">7D</button>
+              <button class="btn btn-secondary" style="font-size:12px;">30D</button>
+              <button class="btn btn-ghost" style="font-size:12px;">90D</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <svg class="chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#58a6ff" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="40" x2="800" y2="40" stroke="var(--border-subtle)" stroke-width="1"/>
+              <line x1="0" y1="80" x2="800" y2="80" stroke="var(--border-subtle)" stroke-width="1"/>
+              <line x1="0" y1="120" x2="800" y2="120" stroke="var(--border-subtle)" stroke-width="1"/>
+              <line x1="0" y1="160" x2="800" y2="160" stroke="var(--border-subtle)" stroke-width="1"/>
+              <path d="M20,120 L50,100 L80,60 L110,80 L140,100 L170,70 L200,50 L230,80 L260,110 L290,90 L320,70 L350,100 L380,80 L410,60 L440,90 L470,70 L500,50 L530,80 L560,100 L590,70 L620,60 L650,80 L680,50 L710,70 L740,40 L770,60 L800,50 L800,200 L20,200 Z" fill="url(#areaGrad)"/>
+              <path d="M20,120 L50,100 L80,60 L110,80 L140,100 L170,70 L200,50 L230,80 L260,110 L290,90 L320,70 L350,100 L380,80 L410,60 L440,90 L470,70 L500,50 L530,80 L560,100 L590,70 L620,60 L650,80 L680,50 L710,70 L740,40 L770,60 L800,50" fill="none" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="800" cy="50" r="5" fill="#58a6ff" stroke="var(--bg)" stroke-width="2"/>
+              <text x="760" y="35" fill="#58a6ff" font-size="11" font-weight="600">Today</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Sleep vs Mood</div><div class="card-heading">Correlation Scatter</div></div></div>
+            <div class="chart-container">
+              <svg class="chart-svg" viewBox="0 0 400 200">
+                <line x1="40" y1="180" x2="380" y2="180" stroke="var(--border-subtle)" stroke-width="1"/>
+                <line x1="40" y1="180" x2="40" y2="20" stroke="var(--border-subtle)" stroke-width="1"/>
+                <text x="10" y="100" fill="var(--text-tertiary)" font-size="10" transform="rotate(-90 10,100)">Mood Score</text>
+                <text x="200" y="195" fill="var(--text-tertiary)" font-size="10" text-anchor="middle">Sleep Hours</text>
+                <circle cx="80" cy="140" r="6" fill="rgba(88,166,255,0.6)"/><circle cx="120" cy="120" r="6" fill="rgba(88,166,255,0.6)"/><circle cx="160" cy="90" r="6" fill="rgba(88,166,255,0.6)"/>
+                <circle cx="200" cy="70" r="6" fill="rgba(88,166,255,0.6)"/><circle cx="240" cy="60" r="6" fill="rgba(88,166,255,0.6)"/><circle cx="280" cy="50" r="6" fill="rgba(88,166,255,0.6)"/>
+                <circle cx="320" cy="55" r="6" fill="rgba(88,166,255,0.6)"/><circle cx="100" cy="130" r="6" fill="rgba(88,166,255,0.4)"/><circle cx="140" cy="100" r="6" fill="rgba(88,166,255,0.4)"/>
+                <path d="M40,170 Q200,20 380,40" fill="none" stroke="var(--green)" stroke-width="2" stroke-dasharray="5,5" opacity="0.6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Habit Radar</div><div class="card-heading">Your Balance Score</div></div></div>
+            <div class="chart-container">
+              <svg class="chart-svg" viewBox="0 0 400 200">
+                <polygon points="200,30 320,80 320,160 200,190 80,160 80,80" fill="none" stroke="var(--border-subtle)" stroke-width="1"/>
+                <polygon points="200,60 260,90 260,140 200,160 140,140 140,90" fill="none" stroke="var(--border-subtle)" stroke-width="1"/>
+                <polygon points="200,90 220,105 220,130 200,140 180,130 180,105" fill="none" stroke="var(--border-subtle)" stroke-width="1"/>
+                <line x1="200" y1="30" x2="200" y2="190" stroke="var(--border-subtle)" stroke-width="1"/>
+                <line x1="80" y1="80" x2="320" y2="160" stroke="var(--border-subtle)" stroke-width="1"/>
+                <line x1="320" y1="80" x2="80" y2="160" stroke="var(--border-subtle)" stroke-width="1"/>
+                <polygon points="200,50 280,85 290,150 200,175 110,150 120,85" fill="rgba(88,166,255,0.15)" stroke="#58a6ff" stroke-width="2"/>
+                <text x="200" y="25" fill="var(--text-secondary)" font-size="10" text-anchor="middle">Health</text>
+                <text x="330" y="80" fill="var(--text-secondary)" font-size="10">Work</text>
+                <text x="330" y="170" fill="var(--text-secondary)" font-size="10">Social</text>
+                <text x="200" y="200" fill="var(--text-secondary)" font-size="10" text-anchor="middle">Recovery</text>
+                <text x="60" y="170" fill="var(--text-secondary)" font-size="10" text-anchor="end">Mind</text>
+                <text x="60" y="80" fill="var(--text-secondary)" font-size="10" text-anchor="end">Growth</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS SCREEN -->
+      <div class="screen" id="screen-settings">
+        <div class="grid-sidebar">
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header"><div><div class="card-title">Preferences</div><div class="card-heading">Appearance</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Dark Mode</div><div style="font-size:12px;color:var(--text-secondary);">Easier on the eyes at night</div></div>
+                  <div class="habit-toggle on" onclick="toggleTheme();this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Compact Mode</div><div style="font-size:12px;color:var(--text-secondary);">Show more content per screen</div></div>
+                  <div class="habit-toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Animations</div><div style="font-size:12px;color:var(--text-secondary);">Enable transition effects</div></div>
+                  <div class="habit-toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Data</div><div class="card-heading">Export & Privacy</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+                <button class="btn btn-secondary" style="justify-content:flex-start;">📥 Export as CSV</button>
+                <button class="btn btn-secondary" style="justify-content:flex-start;">📄 Export as PDF Report</button>
+                <button class="btn btn-secondary" style="justify-content:flex-start;">💾 Backup to Cloud</button>
+                <button class="btn btn-secondary" style="justify-content:flex-start;color:var(--red);border-color:rgba(248,81,49,0.3);">🗑️ Delete All Data</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header"><div><div class="card-title">Notifications</div><div class="card-heading">Reminders</div></div></div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Daily Check-in</div><div style="font-size:12px;color:var(--text-secondary);">Remind me at 8:00 PM</div></div>
+                  <div class="habit-toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Streak at Risk</div><div style="font-size:12px;color:var(--text-secondary);">Warn me before 11 PM</div></div>
+                  <div class="habit-toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-elevated);border-radius:var(--radius-sm);">
+                  <div><div style="font-weight:600;font-size:14px;">Weekly Report</div><div style="font-size:12px;color:var(--text-secondary);">Monday mornings</div></div>
+                  <div class="habit-toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Account</div><div class="card-heading">Profile</div></div></div>
+              <div style="margin-top:16px;display:flex;flex-direction:column;gap:16px;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                  <div class="avatar" style="width:60px;height:60px;font-size:20px;">SC</div>
+                  <div><button class="btn btn-secondary" style="font-size:12px;">Change Avatar</button></div>
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;">Display Name</label>
+                  <input type="text" value="Shubham Chowdhury" style="width:100%;padding:10px 14px;background:var(--surface-elevated);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;"/>
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;">Email</label>
+                  <input type="email" value="shubham@example.com" style="width:100%;padding:10px 14px;background:var(--surface-elevated);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;"/>
+                </div>
+                <button class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other placeholder screens -->
+      <div class="screen" id="screen-notifications"><div class="card"><div class="card-heading">Notifications</div><p style="color:var(--text-secondary);margin-top:12px;">No new notifications.</p></div></div>
+      <div class="screen" id="screen-profile"><div class="card"><div class="card-heading">Profile</div><p style="color:var(--text-secondary);margin-top:12px;">Profile settings and statistics.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Quick Checkin Modal -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal-card">
+    <div class="modal-header"><div class="modal-title">Quick Check-in</div><button class="modal-close" onclick="closeCheckinModal()">✕</button></div>
+    <p style="color:var(--text-secondary);margin-bottom:20px;">How are you feeling right now?</p>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="btn btn-ghost" style="flex:1;font-size:24px;" onclick="quickMood(1);closeCheckinModal()">😞</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:24px;" onclick="quickMood(2);closeCheckinModal()">😕</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:24px;" onclick="quickMood(3);closeCheckinModal()">😐</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:24px;" onclick="quickMood(4);closeCheckinModal()">😊</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:24px;" onclick="quickMood(5);closeCheckinModal()">😄</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="showScreen('checkin');closeCheckinModal()">Full Check-in →</button>
+  </div>
+</div>
+
+<script>
+// ── Navigation ───────────────────────────────────
+const screens=['dashboard','checkin','calendar','focus','insights','achievements','trends','settings','notifications','profile'];
+const titles={dashboard:'Dashboard',checkin:'Daily Check-in',calendar:'Calendar',focus:'Focus Timer',insights:'AI Insights',achievements:'Achievements',trends:'Trends & Analytics',settings:'Settings',notifications:'Notifications',profile:'Profile'};
+const subtitles={dashboard:'Overview',checkin:'Track your day',calendar:'Mood history',focus:'Deep work sessions',insights:'Predictive analytics',achievements:'Your progress',trends:'Detailed analytics',settings:'Preferences',notifications:'Activity feed',profile:'Your account'};
+
+function showScreen(name){
+  screens.forEach(s=>document.getElementById('screen-'+s).classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((btn,idx)=>{
+    btn.classList.toggle('active',screens[idx]===name);
+  });
+  document.getElementById('page-title').textContent=titles[name];
+  document.getElementById('page-subtitle').textContent=subtitles[name];
+  if(window.innerWidth<768)document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+  if(window.innerWidth<768)document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── Onboarding ───────────────────────────────────
+let obStep=1;
+function nextStep(){
+  if(obStep<3){
+    document.getElementById('ob-step-'+obStep).classList.remove('active');
+    document.getElementById('pd-'+obStep).classList.remove('active');
+    document.getElementById('pd-'+obStep).classList.add('done');
+    obStep++;
+    document.getElementById('ob-step-'+obStep).classList.add('active');
+    document.getElementById('pd-'+obStep).classList.add('active');
+    document.getElementById('ob-back').style.visibility='visible';
+  }else{
+    closeOnboarding();
+  }
+}
+function prevStep(){
+  if(obStep>1){
+    document.getElementById('ob-step-'+obStep).classList.remove('active');
+    document.getElementById('pd-'+obStep).classList.remove('active');
+    obStep--;
+    document.getElementById('ob-step-'+obStep).classList.add('active');
+    document.getElementById('pd-'+obStep).classList.add('active');
+    document.getElementById('pd-'+obStep).classList.remove('done');
+    if(obStep===1)document.getElementById('ob-back').style.visibility='hidden';
+  }
+}
+function skipOnboarding(){closeOnboarding();}
+function closeOnboarding(){
+  document.getElementById('onboarding').classList.remove('active');
+  showToast('Welcome to FlowDay Pro! 🎉','success');
+}
+function toggleHabitChip(el){el.classList.toggle('selected');}
+
+// ── Check-in ─────────────────────────────────────
+function selectMood(el,val){
+  document.querySelectorAll('.mood-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function updateEnergy(val){
+  document.getElementById('energyValue').textContent=val+'/10';
+}
+function toggleCheckinHabit(row){
+  row.classList.toggle('completed');
+  const tog=row.querySelector('.habit-toggle');
+  tog.classList.toggle('on');
+}
+function formatText(cmd){
+  const note=document.getElementById('journalNote');
+  const start=note.selectionStart;
+  const end=note.selectionEnd;
+  const text=note.value;
+  let wrap=['',''];
+  if(cmd==='bold')wrap=['**','**'];
+  if(cmd==='italic')wrap=['*','*'];
+  if(cmd==='list')wrap=['- ',''];
+  note.value=text.slice(0,start)+wrap[0]+text.slice(start,end)+wrap[1]+text.slice(end);
+  note.focus();
+}
+function toggleVoiceRecord(){
+  const btn=document.getElementById('voiceBtn');
+  btn.classList.toggle('recording');
+  if(btn.classList.contains('recording')){
+    btn.innerHTML='🔴 Recording... (0:00)';
+    showToast('Voice recording started','info');
+  }else{
+    btn.innerHTML='🎙️ Voice Note';
+    showToast('Voice note saved','success');
+  }
+}
+document.getElementById('journalNote').addEventListener('input',function(){
+  document.getElementById('charCount').textContent=this.value.length+' / 500';
+});
+function saveCheckin(){
+  showToast('Check-in saved! +50 XP earned','success');
+  setTimeout(()=>showScreen('insights'),1500);
+}
+
+// ── Quick Checkin Modal ──────────────────────────
+function showCheckinModal(){document.getElementById('checkinModal').classList.add('active');}
+function closeCheckinModal(){document.getElementById('checkinModal').classList.remove('active');}
+function quickMood(val){showToast('Mood logged: '+['Rough','Low','Okay','Good','Great'][val-1],'success');}
+
+// ── Toast System ─────────────────────────────────
+function showToast(msg,type='success'){
+  const container=document.getElementById('toastContainer');
+  const toast=document.createElement('div');
+  toast.className='toast toast-'+type;
+  const icon=type==='success'?'✓':type==='info'?'ℹ':'⚠';
+  toast.innerHTML='<span class="toast-icon">'+icon+'</span>'+msg;
+  container.appendChild(toast);
+  requestAnimationFrame(()=>toast.classList.add('show'));
+  setTimeout(()=>{toast.classList.remove('show');setTimeout(()=>toast.remove(),400);},4000);
+}
+
+// ── Theme Toggle ─────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const current=html.getAttribute('data-theme');
+  html.setAttribute('data-theme',current==='dark'?'light':'dark');
+}
+
+// ── Timer ────────────────────────────────────────
+let timerInterval=null;
+let timerSeconds=25*60;
+let timerRunning=false;
+function toggleTimer(){
+  const btn=document.getElementById('timerPlayBtn');
+  if(timerRunning){
+    clearInterval(timerInterval);
+    timerRunning=false;
+    btn.textContent='▶';
+    showToast('Focus session paused','info');
+  }else{
+    timerRunning=true;
+    btn.textContent='⏸';
+    showToast('Focus session started!','success');
+    timerInterval=setInterval(()=>{
+      if(timerSeconds>0){
+        timerSeconds--;
+        updateTimerDisplay();
+      }else{
+        clearInterval(timerInterval);
+        timerRunning=false;
+        btn.textContent='▶';
+        showToast('Focus session complete! +25 XP','success');
+      }
+    },1000);
+  }
+}
+function updateTimerDisplay(){
+  const m=Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s=(timerSeconds%60).toString().padStart(2,'0');
+  document.getElementById('timerDisplay').textContent=m+':'+s;
+  const pct=timerSeconds/(25*60);
+  const offset=440*(1-pct);
+  document.getElementById('timerProgress').setAttribute('stroke-dashoffset',offset);
+}
+function adjustTimer(min){
+  timerSeconds+=min*60;
+  if(timerSeconds<60)timerSeconds=60;
+  if(timerSeconds>120*60)timerSeconds=120*60;
+  updateTimerDisplay();
+}
+
+// ── Heatmap Generation ───────────────────────────
+function genHeatmap(id,density){
+  const el=document.getElementById(id);
+  if(!el)return;
+  let html='';
+  for(let i=0;i<28;i++){
+    const r=Math.random();
+    let cls='heatmap-cell';
+    if(r<density*.25) cls+=' l4';
+    else if(r<density*.5) cls+=' l3';
+    else if(r<density*.75) cls+=' l2';
+    else if(r<density) cls+=' l1';
+    html+='<div class="'+cls+'" title="Day '+(28-i)+'"></div>';
+  }
+  el.innerHTML=html;
+}
+genHeatmap('hm-exercise',.85);
+genHeatmap('hm-sleep',.55);
+genHeatmap('hm-read',.70);
+genHeatmap('hm-water',.60);
+
+// ── Calendar Generation ──────────────────────────
+function genCalendar(){
+  const grid=document.querySelector('.calendar-grid');
+  const daysInMonth=30;
+  const startDay=3; // Wednesday
+  let html='';
+  for(let i=0;i<startDay;i++)html+='<div class="calendar-date"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    let cls='calendar-date';
+    if(d===27)cls+=' today';
+    else if(Math.random()>0.3){
+      cls+=' has-data mood-'+Math.floor(Math.random()*5+1);
+    }
+    html+='<div class="'+cls+'">'+d+'</div>';
+  }
+  // Fill remaining
+  const totalCells=startDay+daysInMonth;
+  const remaining=35-totalCells;
+  for(let i=0;i<remaining;i++)html+='<div class="calendar-date"></div>';
+  grid.innerHTML=grid.innerHTML+html;
+}
+genCalendar();
+
+// ── Keyboard Shortcuts ───────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeCheckinModal();
+    document.getElementById('onboarding').classList.remove('active');
+  }
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){
+    e.preventDefault();
+    document.querySelector('.search-box input').focus();
+  }
+  if(e.key==='d' && e.ctrlKey){e.preventDefault();showScreen('dashboard');}
+  if(e.key==='c' && e.ctrlKey){e.preventDefault();showScreen('checkin');}
+  if(e.key==='f' && e.ctrlKey){e.preventDefault();showScreen('focus');}
+});
+
+// ── Init ─────────────────────────────────────────
+updateTimerDisplay();
+</script>
+</body>
+</html>
