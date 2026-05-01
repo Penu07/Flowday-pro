@@ -491,9 +491,15 @@ select:focus-visible{
 .onboarding-header,.onboarding-footer{
   padding:22px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px
 }
-.onboarding-footer{border-bottom:none;border-top:1px solid var(--border)}
+.onboarding-footer{
+  border-bottom:none;border-top:1px solid var(--border);
+  padding-bottom:calc(22px + env(safe-area-inset-bottom, 0px));
+}
 .onboarding-footer .btn{flex-shrink:0}
-.onboarding-footer .btn-primary{max-width:100%}
+.onboarding-footer .btn-primary{
+  max-width:100%;
+  min-width:260px;
+}
 .onboarding-body{flex:1;display:flex;align-items:center;justify-content:center;padding:34px}
 .onboarding-step{display:none;max-width:660px;width:100%;text-align:center}
 .onboarding-step.active{display:block;animation:rise .3s ease}
@@ -572,6 +578,7 @@ select:focus-visible{
   .onboarding-footer{
     flex-wrap:wrap;
     justify-content:center;
+    padding-inline:20px;
   }
   .onboarding-footer #onboardingBackBtn{
     order:1;
@@ -585,7 +592,7 @@ select:focus-visible{
   .onboarding-footer #onboardingNextBtn{
     order:3;
     width:min(100%,420px);
-    margin-left:auto;
+    margin-inline:auto;
   }
 }
 
@@ -593,11 +600,13 @@ select:focus-visible{
   .onboarding-footer{
     align-items:stretch;
     gap:12px;
+    padding:16px 16px calc(18px + env(safe-area-inset-bottom, 0px));
   }
   .onboarding-footer #onboardingBackBtn,
   .onboarding-footer #onboardingNextBtn{
     width:100%;
     margin:0;
+    min-width:0;
   }
 }
 </style>
