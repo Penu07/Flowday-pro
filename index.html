@@ -485,7 +485,9 @@ select:focus-visible{
 
 .onboarding-overlay{
   position:fixed;inset:0;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(18px);
-  display:none;flex-direction:column
+  display:none;flex-direction:column;
+  overflow:auto;
+  overscroll-behavior:contain;
 }
 .onboarding-overlay.active{display:flex}
 .onboarding-header,.onboarding-footer{
@@ -494,13 +496,24 @@ select:focus-visible{
 .onboarding-footer{
   border-bottom:none;border-top:1px solid var(--border);
   padding-bottom:calc(22px + env(safe-area-inset-bottom, 0px));
+  position:sticky;
+  bottom:0;
+  background:color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter:blur(18px);
 }
 .onboarding-footer .btn{flex-shrink:0}
 .onboarding-footer .btn-primary{
   max-width:100%;
   min-width:260px;
 }
-.onboarding-body{flex:1;display:flex;align-items:center;justify-content:center;padding:34px}
+.onboarding-body{
+  flex:1;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:34px;
+}
 .onboarding-step{display:none;max-width:660px;width:100%;text-align:center}
 .onboarding-step.active{display:block;animation:rise .3s ease}
 .ob-icon{font-size:64px;display:block;margin-bottom:18px}
@@ -601,6 +614,10 @@ select:focus-visible{
     align-items:stretch;
     gap:12px;
     padding:16px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .onboarding-body{
+    align-items:flex-start;
+    padding:24px 16px;
   }
   .onboarding-footer #onboardingBackBtn,
   .onboarding-footer #onboardingNextBtn{
