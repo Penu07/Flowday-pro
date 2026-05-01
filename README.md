@@ -2,7 +2,7 @@ FlowDay Pro
 
 Personal Habit & Mood Intelligence PWA
 
-&gt; AI-powered daily journaling for working professionals. Complete your check-in under 90 seconds, discover predictive insights, and prevent burnout before it happens.
+AI-powered daily journaling for working professionals. Complete your check-in under 90 seconds, discover predictive insights, and prevent burnout before it happens.
 
 🚀 Features
 
